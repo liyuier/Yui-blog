@@ -60,6 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/content/category/*").authenticated()  // 分类
                 .antMatchers("/content/article/*").authenticated()  // 文章
                 .antMatchers(("/system/menu/*")).authenticated()  // 菜单
+                .antMatchers(("/system/role/*")).authenticated()  // 角色
                 // 除上面外的所有请求全部不需要认证即可访问
                 .anyRequest().permitAll();
 

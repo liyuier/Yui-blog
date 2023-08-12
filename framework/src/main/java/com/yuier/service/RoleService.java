@@ -1,6 +1,10 @@
 package com.yuier.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yuier.domain.ResponseResult;
+import com.yuier.domain.dto.role.AddRoleDto;
+import com.yuier.domain.dto.role.AdminGetRoleListDto;
+import com.yuier.domain.dto.role.ChangeRoleStatusDto;
 import com.yuier.domain.entity.Role;
 
 import java.util.List;
@@ -14,5 +18,11 @@ import java.util.List;
 public interface RoleService extends IService<Role> {
 
     List<String> selectRoleKeysByUserId(Long id);
+
+    ResponseResult adminGetRoleList(Integer pageNum, Integer pageSize, AdminGetRoleListDto adminGetRoleListDto);
+
+    ResponseResult changeStatus(ChangeRoleStatusDto changeRoleStatusDto);
+
+    ResponseResult addRole(AddRoleDto addRoleDto);
 }
 

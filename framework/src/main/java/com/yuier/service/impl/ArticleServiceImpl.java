@@ -241,8 +241,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     // 后台删除文章
     @Override
+    @Transactional
     public ResponseResult deleteArticle(List<Long> idList) {
-        idList.forEach(this::removeById);
+        idList.forEach(id -> {
+            removeById(id);
+            LambdaQueryWrapper<ArticleTag> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(ArticleTag::getArticleId, id);
+            articleTagService.remove(queryWrapper);
+        });
         return ResponseResult.okResult();
     }
 

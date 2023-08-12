@@ -7,7 +7,9 @@ import com.yuier.domain.ResponseResult;
 import com.yuier.domain.dto.menu.AddMenuDto;
 import com.yuier.domain.dto.menu.MenuListDto;
 import com.yuier.domain.dto.menu.UpdateMenuDto;
+import com.yuier.domain.entity.RoleMenu;
 import com.yuier.domain.vo.admin.MenuVo;
+import com.yuier.domain.vo.menu.AddRoleMenuVo;
 import com.yuier.domain.vo.menu.AdminMenuDetailVo;
 import com.yuier.domain.vo.menu.MenuListVo;
 import com.yuier.enums.AppHttpCodeEnum;
@@ -15,12 +17,16 @@ import com.yuier.exception.SystemException;
 import com.yuier.mapper.MenuMapper;
 import com.yuier.domain.entity.Menu;
 import com.yuier.service.MenuService;
+import com.yuier.service.RoleMenuService;
 import com.yuier.utils.BeanCopyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 菜单权限表(Menu)表服务实现类
@@ -30,6 +36,9 @@ import java.util.List;
  */
 @Service
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
+
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     // 根据用户 id 获取权限列表
     @Override
@@ -62,15 +71,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             List<Menu> menuList = menuMapper.selectMenuListByUserId(id);
             menuVoList = BeanCopyUtils.copyBeanList(menuList, MenuVo.class);
         }
-        // 先构建一个由第一层菜单组成的 tree ，然后以此为基础装配整个 tree
-        List<MenuVo> menuVoTreeRoot = new ArrayList<>();
-        for (MenuVo menuVo : menuVoList) {
-            if (menuVo.getParentId().equals(SystemConstants.ROOT_MENU_ID)) {
-                menuVoTreeRoot.add(menuVo);
-            }
-        }
-        // 以第一层为基础创建 tree
-        List<MenuVo> menuVoTree = toTree(menuVoTreeRoot, menuVoList);
+        List<MenuVo> menuVoTree = getMenuVoTree(menuVoList);
         return menuVoTree;
     }
 
@@ -125,13 +126,27 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     // 删除菜单
     @Override
+    @Transactional
     public ResponseResult deleteMenu(Long menuId) {
         // 判断是否有子菜单
         if (childrenMenuExists(menuId)) {
             throw new SystemException(AppHttpCodeEnum.CHILDREN_MENU_EXIST);
         }
+        // 删除菜单
         removeById(menuId);
+        // 删除 role-menu 表
+        LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(RoleMenu::getMenuId, menuId);
+        roleMenuService.remove(queryWrapper);
         return ResponseResult.okResult();
+    }
+
+    // 返回菜单树
+    @Override
+    public ResponseResult adminGetMenuTree() {
+        List<MenuVo> menuTree = selectMenuTreeByUserId(SystemConstants.SUPER_ADMIN_ID);
+        List<AddRoleMenuVo> addRoleMenuVoList = menuVoTree2AddRoleMenuVoTree(menuTree);
+        return ResponseResult.okResult(addRoleMenuVoList);
     }
 
     // 直接返回超级管理员的权限列表
@@ -219,5 +234,39 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         List<Menu> childrenMenuList = list(queryWrapper);
         return childrenMenuList.size() > 0;
     }
+
+    public List<MenuVo> getMenuVoTree(List<MenuVo> baseMenuVoList) {
+        List<MenuVo> menuVoTreeRoot = new ArrayList<>();
+        for (MenuVo menuVo : baseMenuVoList) {
+            if (menuVo.getParentId().equals(SystemConstants.ROOT_MENU_ID)) {
+                menuVoTreeRoot.add(menuVo);
+            }
+        }
+        // 以第一层为基础创建 tree
+        List<MenuVo> menuVoTree = toTree(menuVoTreeRoot, baseMenuVoList);
+        return menuVoTree;
+    }
+
+    public List<AddRoleMenuVo> menuVoTree2AddRoleMenuVoTree(List<MenuVo> menuVoTree) {
+        List<AddRoleMenuVo> addRoleMenuVoList = new ArrayList<>();
+        for (MenuVo menuVo : menuVoTree) {
+            AddRoleMenuVo addRoleMenuVo = createAddRoleMenVoFromMenVo(menuVo);
+            if (Objects.nonNull(menuVo.getChildren())) {
+                addRoleMenuVo.setChildren(menuVoTree2AddRoleMenuVoTree(menuVo.getChildren()));
+            }
+            addRoleMenuVoList.add(addRoleMenuVo);
+        }
+        return addRoleMenuVoList;
+    }
+
+    public AddRoleMenuVo createAddRoleMenVoFromMenVo(MenuVo menuVo) {
+        AddRoleMenuVo addRoleMenuVo = new AddRoleMenuVo();
+        addRoleMenuVo
+                .setId(menuVo.getId())
+                .setMenuName(menuVo.getMenuName())
+                .setParentId(menuVo.getParentId());
+        return addRoleMenuVo;
+    }
+
 }
 

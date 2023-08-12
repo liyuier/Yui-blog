@@ -49,6 +49,7 @@
 
 ## 开发环境
 
+* IDEA 2023.1.3
 * Oracle JDK 17.0.1
 * Maven 3.6.3
 * SpringBoot 2.7.14

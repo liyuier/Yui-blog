@@ -52,4 +52,9 @@ public class MenuController {
         return menuService.deleteMenu(menuId);
     }
 
+    @GetMapping("/treeselect")
+    @SystemLog(businessName = "后台新增角色时先获取菜单树列表")
+    public ResponseResult adminAddRoleGetMenuTree() {
+        return menuService.adminGetMenuTree();
+    }
 }
