@@ -1,0 +1,42 @@
+server:
+  port: 7777
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    url: jdbc:mysql://localhost:3306/blog_database_name?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: username
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 5MB
+mybatis-plus:
+  configuration:
+    # 日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: delFlag  # 全局逻辑删除标识
+      logic-delete-value: 1        # 删除值
+      logic-not-delete-value: 0    # 非删除值
+      id-type: auto
+logging:
+  level:
+    com:
+      yuier:
+        mapper: debug
+user-agent: user-agent
+smms:
+  baseurl: https://smms.app/api/v2
+  upload-image: /upload
+  api-token: api-token
+  authorization: authorization
+  cookie: cookie
+COS:
+  secret-id: secret-id
+  secret-key: secret-key
+  bucket-name:
+    yui-bucket: yui-bucket-1309363843
