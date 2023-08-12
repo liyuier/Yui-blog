@@ -236,10 +236,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .map(tagId -> new ArticleTag(article.getId(), tagId))
                 .toList();
         articleTagService.saveBatch(articleTagList);
-//        articleTagService
         return ResponseResult.okResult();
     }
-
 
     // 从 redis 中取出文章浏览量赋值给文章
     private <T> void setViewCountFromRedis(T vo) throws NoSuchFieldException, IllegalAccessException {
