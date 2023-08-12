@@ -3,12 +3,21 @@ package com.yuier.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuier.constants.SystemConstants;
+import com.yuier.domain.ResponseResult;
+import com.yuier.domain.dto.menu.AddMenuDto;
+import com.yuier.domain.dto.menu.MenuListDto;
+import com.yuier.domain.dto.menu.UpdateMenuDto;
 import com.yuier.domain.vo.admin.MenuVo;
+import com.yuier.domain.vo.menu.AdminMenuDetailVo;
+import com.yuier.domain.vo.menu.MenuListVo;
+import com.yuier.enums.AppHttpCodeEnum;
+import com.yuier.exception.SystemException;
 import com.yuier.mapper.MenuMapper;
 import com.yuier.domain.entity.Menu;
 import com.yuier.service.MenuService;
 import com.yuier.utils.BeanCopyUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +31,7 @@ import java.util.List;
 @Service
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
+    // 根据用户 id 获取权限列表
     @Override
     public List<String> selectPermsByUserId(Long id) {
 
@@ -62,6 +72,66 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         // 以第一层为基础创建 tree
         List<MenuVo> menuVoTree = toTree(menuVoTreeRoot, menuVoList);
         return menuVoTree;
+    }
+
+    // 返回全部菜单列表
+    @Override
+    public ResponseResult menuList(MenuListDto menuListDto) {
+        // 如果传入了 status 或 name ，那么以这两条值进行模糊查询
+        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(
+                StringUtils.hasText(menuListDto.getStatus()),
+                Menu::getStatus,
+                menuListDto.getStatus()
+        );
+        queryWrapper.like(
+                StringUtils.hasText(menuListDto.getMenuName()),
+                Menu::getMenuName,
+                menuListDto.getMenuName()
+        );
+        queryWrapper.orderByAsc(Menu::getParentId);
+        queryWrapper.orderByAsc(Menu::getOrderNum);
+        List<Menu> menuList = list(queryWrapper);
+        List<MenuListVo> menuListVos = BeanCopyUtils.copyBeanList(menuList, MenuListVo.class);
+        return ResponseResult.okResult(menuListVos);
+    }
+
+    // 新增菜单
+    @Override
+    public ResponseResult addMenu(AddMenuDto addMenuDto) {
+        Menu menu = BeanCopyUtils.copyBean(addMenuDto, Menu.class);
+        save(menu);
+        return ResponseResult.okResult();
+    }
+
+    // 获取菜单详情
+    @Override
+    public ResponseResult adminGetMenuDetail(Long id) {
+        Menu menu = getById(id);
+        AdminMenuDetailVo adminMenuDetailVo = BeanCopyUtils.copyBean(menu, AdminMenuDetailVo.class);
+        return ResponseResult.okResult(adminMenuDetailVo);
+    }
+
+    // 修改菜单
+    @Override
+    public ResponseResult updateMenu(UpdateMenuDto updateMenuDto) {
+        if (updateMenuDto.getParentId().equals(updateMenuDto.getId())) {
+            throw new SystemException(AppHttpCodeEnum.PARENT_MENU_NOT_SELF);
+        }
+        Menu menu = BeanCopyUtils.copyBean(updateMenuDto, Menu.class);
+        updateById(menu);
+        return ResponseResult.okResult();
+    }
+
+    // 删除菜单
+    @Override
+    public ResponseResult deleteMenu(Long menuId) {
+        // 判断是否有子菜单
+        if (childrenMenuExists(menuId)) {
+            throw new SystemException(AppHttpCodeEnum.CHILDREN_MENU_EXIST);
+        }
+        removeById(menuId);
+        return ResponseResult.okResult();
     }
 
     // 直接返回超级管理员的权限列表
@@ -143,5 +213,11 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return childrenList;
     }
 
+    private Boolean childrenMenuExists(Long menuId) {
+        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Menu::getParentId, menuId);
+        List<Menu> childrenMenuList = list(queryWrapper);
+        return childrenMenuList.size() > 0;
+    }
 }
 

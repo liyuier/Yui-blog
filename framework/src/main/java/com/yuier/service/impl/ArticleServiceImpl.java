@@ -239,6 +239,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.okResult();
     }
 
+    // 后台删除文章
+    @Override
+    public ResponseResult deleteArticle(List<Long> idList) {
+        idList.forEach(this::removeById);
+        return ResponseResult.okResult();
+    }
+
     // 从 redis 中取出文章浏览量赋值给文章
     private <T> void setViewCountFromRedis(T vo) throws NoSuchFieldException, IllegalAccessException {
         // 获取对象类实例

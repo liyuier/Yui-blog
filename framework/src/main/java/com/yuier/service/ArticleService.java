@@ -7,6 +7,8 @@ import com.yuier.domain.dto.article.AllArticleListDto;
 import com.yuier.domain.dto.article.UpdateArticleDto;
 import com.yuier.domain.entity.Article;
 
+import java.util.List;
+
 /**
  * 文章表(Article)表服务接口
  *
@@ -30,5 +32,7 @@ public interface ArticleService extends IService<Article> {
     ResponseResult adminGetArticleDetail(Long id);
 
     ResponseResult updateArticle(UpdateArticleDto updateArticleDto);
+
+    ResponseResult deleteArticle(List<Long> idList);
 }
 
