@@ -30,6 +30,6 @@ public interface CategoryService extends IService<Category> {
 
     ResponseResult updateCategory(UpdateCategoryDto updateCategoryDto);
 
-    ResponseResult deleteCategory(Long id);
+    ResponseResult deleteCategory(List<Long> id);
 }
 

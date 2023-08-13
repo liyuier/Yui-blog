@@ -171,12 +171,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     // 删除用户
     @Override
-    public ResponseResult deleteUser(Long id) {
-        // 不能删除当前正在操作的用户
-        if (SecurityUtils.getUserId().equals(id)) {
-            throw new SystemException(AppHttpCodeEnum.NO_DELETE_OPERATING_USER);
+    public ResponseResult deleteUser(List<Long> idList) {
+        for (Long id : idList) {
+            // 不能删除当前正在操作的用户
+            if (SecurityUtils.getUserId().equals(id)) {
+                throw new SystemException(AppHttpCodeEnum.NO_DELETE_OPERATING_USER);
+            }
+            removeById(id);
         }
-        removeById(id);
         return ResponseResult.okResult();
     }
 

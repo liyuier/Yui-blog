@@ -10,6 +10,8 @@ import com.yuier.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @Author: Yui
  * @Description:
@@ -54,8 +56,8 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
-    @SystemLog(businessName = "删除角色")
-    public ResponseResult deleteRole(@PathVariable("id") Long id) {
+    @SystemLog(businessName = "删除角色列表")
+    public ResponseResult deleteRole(@PathVariable("id") List<Long> id) {
         return roleService.deleteRole(id);
     }
 

@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -120,14 +119,16 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     // 删除标签
     @Override
-    public ResponseResult deleteCategory(Long id) {
-        // 查询分类下是否有文章，如果有，无法删除
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getCategoryId, id);
-        if (articleService.list(queryWrapper).size() > 0) {
-            throw new SystemException(AppHttpCodeEnum.CATEGORY_HAVING_ARTICLES);
+    public ResponseResult deleteCategory(List<Long> idList) {
+        for (Long id : idList) {
+            // 查询分类下是否有文章，如果有，无法删除
+            LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Article::getCategoryId, id);
+            if (articleService.list(queryWrapper).size() > 0) {
+                throw new SystemException(AppHttpCodeEnum.CATEGORY_HAVING_ARTICLES);
+            }
+            removeById(id);
         }
-        removeById(id);
         return ResponseResult.okResult();
     }
 }

@@ -56,8 +56,8 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @SystemLog(businessName = "删除分类")
-    public ResponseResult deleteCategory(@PathVariable("id") Long id) {
+    @SystemLog(businessName = "删除分类列表")
+    public ResponseResult deleteCategory(@PathVariable("id") List<Long> id) {
         return categoryService.deleteCategory(id);
     }
 

@@ -9,6 +9,8 @@ import com.yuier.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @Author: Yui
  * @Description:
@@ -35,8 +37,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @SystemLog(businessName = "删除用户")
-    public ResponseResult deleteUser(@PathVariable("id") Long id) {
+    @SystemLog(businessName = "删除用户列表")
+    public ResponseResult deleteUser(@PathVariable("id") List<Long> id) {
         return userService.deleteUser(id);
     }
 

@@ -49,7 +49,7 @@ public class ArticleController {
     }
 
     @DeleteMapping("/{id}")
-    @SystemLog(businessName = "删除博文")
+    @SystemLog(businessName = "删除博文列表")
     public ResponseResult deleteArticle(@PathVariable("id") List<Long> idList) {
         return articleService.deleteArticle(idList);
     }

@@ -5,6 +5,8 @@ import com.yuier.domain.ResponseResult;
 import com.yuier.domain.dto.user.*;
 import com.yuier.domain.entity.User;
 
+import java.util.List;
+
 /**
  * 用户表(User)表服务接口
  *
@@ -23,7 +25,7 @@ public interface UserService extends IService<User> {
 
     ResponseResult adminAddUser(AdminAddUserDto adminAddUserDto);
 
-    ResponseResult deleteUser(Long id);
+    ResponseResult deleteUser(List<Long> id);
 
     ResponseResult adminUserDetail(Long id);
 

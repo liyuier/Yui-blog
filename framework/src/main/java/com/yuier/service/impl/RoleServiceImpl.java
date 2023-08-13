@@ -148,17 +148,19 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     // 删除角色
     @Override
     @Transactional
-    public ResponseResult deleteRole(Long id) {
-        // 先删除角色
-        removeById(id);
-        // 再删除角色对应的菜单列表
-        LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(RoleMenu::getRoleId, id);
-        roleMenuService.remove(queryWrapper);
-        // 还要删除角色对应的 user-role 表
-        LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
-        userRoleWrapper.eq(UserRole::getRoleId, id);
-        userRoleService.remove(userRoleWrapper);
+    public ResponseResult deleteRole(List<Long> idList) {
+        for (Long id : idList) {
+            // 先删除角色
+            removeById(id);
+            // 再删除角色对应的菜单列表
+            LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(RoleMenu::getRoleId, id);
+            roleMenuService.remove(queryWrapper);
+            // 还要删除角色对应的 user-role 表
+            LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
+            userRoleWrapper.eq(UserRole::getRoleId, id);
+            userRoleService.remove(userRoleWrapper);
+        }
         return ResponseResult.okResult();
     }
 

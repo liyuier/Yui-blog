@@ -62,6 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/system/menu/*").authenticated()  // 菜单
                 .antMatchers("/system/role/*").authenticated()  // 角色
                 .antMatchers("/system/user/*").authenticated()  // 用户
+                .antMatchers("/content/link/*").authenticated()  // 友链
                 // 除上面外的所有请求全部不需要认证即可访问
                 .anyRequest().permitAll();
 
