@@ -2,6 +2,9 @@ package com.yuier.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuier.domain.ResponseResult;
+import com.yuier.domain.dto.category.AddCategoryDto;
+import com.yuier.domain.dto.category.ListCategoryByPageDto;
+import com.yuier.domain.dto.category.UpdateCategoryDto;
 import com.yuier.domain.entity.Category;
 import com.yuier.domain.vo.category.AllCategoryListVo;
 
@@ -18,5 +21,15 @@ public interface CategoryService extends IService<Category> {
     ResponseResult getCategoryList();
 
     ResponseResult<List<AllCategoryListVo>> listAllCategory();
+
+    ResponseResult listCategoryByPage(Integer pageNum, Integer pageSize, ListCategoryByPageDto listCategoryByPageDto);
+
+    ResponseResult addCategory(AddCategoryDto addCategoryDto);
+
+    ResponseResult categoryDetailBeforeUpdate(Long id);
+
+    ResponseResult updateCategory(UpdateCategoryDto updateCategoryDto);
+
+    ResponseResult deleteCategory(Long id);
 }
 
