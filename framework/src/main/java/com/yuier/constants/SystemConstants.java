@@ -80,4 +80,7 @@ public class SystemConstants {
     // 根菜单 ID
     public static final Long ROOT_MENU_ID = 0L;
 
+    // 角色状态正常
+    public static final String ROLE_STATUS_NORMAL = "0";
+
 }

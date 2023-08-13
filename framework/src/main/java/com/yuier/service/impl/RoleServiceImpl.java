@@ -11,7 +11,9 @@ import com.yuier.domain.dto.role.AdminGetRoleListDto;
 import com.yuier.domain.dto.role.ChangeRoleStatusDto;
 import com.yuier.domain.dto.role.UpdateRoleDto;
 import com.yuier.domain.entity.RoleMenu;
+import com.yuier.domain.entity.UserRole;
 import com.yuier.domain.vo.page.PageVo;
+import com.yuier.domain.vo.role.AddUserListRoleVo;
 import com.yuier.domain.vo.role.RoleDetailVo;
 import com.yuier.domain.vo.role.RoleListVo;
 import com.yuier.mapper.RoleMapper;
@@ -19,6 +21,7 @@ import com.yuier.domain.entity.Role;
 import com.yuier.service.MenuService;
 import com.yuier.service.RoleMenuService;
 import com.yuier.service.RoleService;
+import com.yuier.service.UserRoleService;
 import com.yuier.utils.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +45,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     private MenuService menuService;
     @Autowired
     private RoleMenuService roleMenuService;
+    @Autowired
+    private UserRoleService userRoleService;
 
     // 根据用户 id 查询 roleKey 列表
     @Override
@@ -150,7 +155,21 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(RoleMenu::getRoleId, id);
         roleMenuService.remove(queryWrapper);
+        // 还要删除角色对应的 user-role 表
+        LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
+        userRoleWrapper.eq(UserRole::getRoleId, id);
+        userRoleService.remove(userRoleWrapper);
         return ResponseResult.okResult();
+    }
+
+    // 新增角色之前先获取正常的角色列表
+    @Override
+    public ResponseResult addUserRoleList() {
+        LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Role::getStatus, SystemConstants.ROLE_STATUS_NORMAL);
+        List<Role> roleList = list(queryWrapper);
+        List<AddUserListRoleVo> addUserListRoleVos = BeanCopyUtils.copyBeanList(roleList, AddUserListRoleVo.class);
+        return ResponseResult.okResult(addUserListRoleVos);
     }
 
     // 获取有效的 menuId

@@ -2,8 +2,7 @@ package com.yuier.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuier.domain.ResponseResult;
-import com.yuier.domain.dto.user.UpdateUserInfoDto;
-import com.yuier.domain.dto.user.UserRegisterDto;
+import com.yuier.domain.dto.user.*;
 import com.yuier.domain.entity.User;
 
 /**
@@ -19,5 +18,15 @@ public interface UserService extends IService<User> {
     ResponseResult updateUserInfo(UpdateUserInfoDto user);
 
     ResponseResult register(UserRegisterDto user);
+
+    ResponseResult adminListUser(Integer pageNum, Integer pageSize, AdminUserListDto adminUserListDto);
+
+    ResponseResult adminAddUser(AdminAddUserDto adminAddUserDto);
+
+    ResponseResult deleteUser(Long id);
+
+    ResponseResult adminUserDetail(Long id);
+
+    ResponseResult adminUpdateUser(AdminUpdateUserDto adminUpdateUserDto);
 }
 

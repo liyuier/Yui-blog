@@ -59,4 +59,10 @@ public class RoleController {
         return roleService.deleteRole(id);
     }
 
+    @GetMapping("/listAllRole")
+    @SystemLog(businessName = "新增角色时先查询所有有效角色")
+    public ResponseResult addUserRoleList() {
+        return roleService.addUserRoleList();
+    }
+
 }

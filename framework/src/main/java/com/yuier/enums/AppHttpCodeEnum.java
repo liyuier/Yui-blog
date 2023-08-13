@@ -26,7 +26,8 @@ public enum AppHttpCodeEnum {
     EMAIL_NOT_NULL(512, "邮箱不能为空"),
     TAG_NAME_NOT_NULL(513, "标签名不能为空"),
     PARENT_MENU_NOT_SELF(514, "上级菜单不能设置为自身"),
-    CHILDREN_MENU_EXIST(515, "存在子菜单，不允许删除");
+    CHILDREN_MENU_EXIST(515, "存在子菜单，不允许删除"),
+    NO_DELETE_OPERATING_USER(516, "不能删除当前正在操作的用户！");
     int code;
     String msg;
 
