@@ -1,6 +1,5 @@
 package com.yuier.domain.vo.menu;
 
-import com.yuier.domain.vo.admin.MenuVo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,9 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class AddRoleMenuVo {
+public class RoleMenuVo {
 
-    private List<AddRoleMenuVo> children;
+    private List<RoleMenuVo> children;
 
     // 菜单ID
     private Long id;

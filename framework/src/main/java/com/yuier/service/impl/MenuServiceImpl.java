@@ -9,7 +9,8 @@ import com.yuier.domain.dto.menu.MenuListDto;
 import com.yuier.domain.dto.menu.UpdateMenuDto;
 import com.yuier.domain.entity.RoleMenu;
 import com.yuier.domain.vo.admin.MenuVo;
-import com.yuier.domain.vo.menu.AddRoleMenuVo;
+import com.yuier.domain.vo.menu.UpdateRoleMenusVo;
+import com.yuier.domain.vo.menu.RoleMenuVo;
 import com.yuier.domain.vo.menu.AdminMenuDetailVo;
 import com.yuier.domain.vo.menu.MenuListVo;
 import com.yuier.enums.AppHttpCodeEnum;
@@ -18,6 +19,7 @@ import com.yuier.mapper.MenuMapper;
 import com.yuier.domain.entity.Menu;
 import com.yuier.service.MenuService;
 import com.yuier.service.RoleMenuService;
+import com.yuier.service.RoleService;
 import com.yuier.utils.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * 菜单权限表(Menu)表服务实现类
@@ -144,9 +147,39 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     // 返回菜单树
     @Override
     public ResponseResult adminGetMenuTree() {
-        List<MenuVo> menuTree = selectMenuTreeByUserId(SystemConstants.SUPER_ADMIN_ID);
-        List<AddRoleMenuVo> addRoleMenuVoList = menuVoTree2AddRoleMenuVoTree(menuTree);
-        return ResponseResult.okResult(addRoleMenuVoList);
+        List<MenuVo> menuVoTree = selectMenuTreeByUserId(SystemConstants.SUPER_ADMIN_ID);
+        List<RoleMenuVo> roleMenuVoList = menuVoTree2AddRoleMenuVoTree(menuVoTree);
+        return ResponseResult.okResult(roleMenuVoList);
+    }
+
+    // 更新角色信息时，返回角色对应的菜单树
+    @Override
+    public ResponseResult getUpdateRoleMenuTree(Long id) {
+        if (id.equals(SystemConstants.SUPER_ADMIN_ROLE_ID)) {
+            // 返回管理员菜单树
+            List<MenuVo> menuVoTree = selectMenuTreeByUserId(SystemConstants.SUPER_ADMIN_ID);
+            List<RoleMenuVo> roleMenuVoList = menuVoTree2AddRoleMenuVoTree(menuVoTree);
+            // 返回所有菜单 ID 列表
+            List<Long> checkedKeys = list().stream().map(Menu::getId).toList();
+            UpdateRoleMenusVo updateRoleMenusVo = new UpdateRoleMenusVo(roleMenuVoList, checkedKeys);
+            return ResponseResult.okResult(updateRoleMenusVo);
+        } else {
+            // 先查出菜单 id 列表
+            LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(RoleMenu::getRoleId, id);
+            List<RoleMenu> roleMenuList = roleMenuService.list(queryWrapper);
+            List<Long> menuIds = roleMenuList.stream().map(RoleMenu::getMenuId).toList();
+            List<Long> validMenuIds = getValidMenuIds(menuIds);
+            // 然后根据菜单 id 列表查询菜单树
+            // 先查菜单列表
+            List<Menu> menuList = validMenuIds.stream().map(this::getById).toList();
+            // 然后一步一步变过去
+            List<MenuVo>  menuVoList = BeanCopyUtils.copyBeanList(menuList, MenuVo.class);
+            List<MenuVo> menuVoTree = getMenuVoTree(menuVoList);
+            List<RoleMenuVo> roleMenuVoList = menuVoTree2AddRoleMenuVoTree(menuVoTree);
+            UpdateRoleMenusVo updateRoleMenusVo = new UpdateRoleMenusVo(roleMenuVoList, validMenuIds);
+            return ResponseResult.okResult(updateRoleMenusVo);
+        }
     }
 
     // 直接返回超级管理员的权限列表
@@ -247,26 +280,32 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return menuVoTree;
     }
 
-    public List<AddRoleMenuVo> menuVoTree2AddRoleMenuVoTree(List<MenuVo> menuVoTree) {
-        List<AddRoleMenuVo> addRoleMenuVoList = new ArrayList<>();
+    public List<RoleMenuVo> menuVoTree2AddRoleMenuVoTree(List<MenuVo> menuVoTree) {
+        List<RoleMenuVo> roleMenuVoList = new ArrayList<>();
         for (MenuVo menuVo : menuVoTree) {
-            AddRoleMenuVo addRoleMenuVo = createAddRoleMenVoFromMenVo(menuVo);
+            RoleMenuVo roleMenuVo = createAddRoleMenVoFromMenVo(menuVo);
             if (Objects.nonNull(menuVo.getChildren())) {
-                addRoleMenuVo.setChildren(menuVoTree2AddRoleMenuVoTree(menuVo.getChildren()));
+                roleMenuVo.setChildren(menuVoTree2AddRoleMenuVoTree(menuVo.getChildren()));
             }
-            addRoleMenuVoList.add(addRoleMenuVo);
+            roleMenuVoList.add(roleMenuVo);
         }
-        return addRoleMenuVoList;
+        return roleMenuVoList;
     }
 
-    public AddRoleMenuVo createAddRoleMenVoFromMenVo(MenuVo menuVo) {
-        AddRoleMenuVo addRoleMenuVo = new AddRoleMenuVo();
-        addRoleMenuVo
+    public RoleMenuVo createAddRoleMenVoFromMenVo(MenuVo menuVo) {
+        RoleMenuVo roleMenuVo = new RoleMenuVo();
+        roleMenuVo
                 .setId(menuVo.getId())
                 .setMenuName(menuVo.getMenuName())
                 .setParentId(menuVo.getParentId());
-        return addRoleMenuVo;
+        return roleMenuVo;
     }
 
+    // 获取有效的 menuId
+    public List<Long> getValidMenuIds(List<Long> menuIds) {
+        return menuIds.stream()
+                .filter(menuId -> Objects.nonNull(getById(menuId)))
+                .toList();
+    }
 }
 

@@ -33,5 +33,7 @@ public interface MenuService extends IService<Menu> {
     ResponseResult deleteMenu(Long menuId);
 
     ResponseResult adminGetMenuTree();
+
+    ResponseResult getUpdateRoleMenuTree(Long id);
 }
 

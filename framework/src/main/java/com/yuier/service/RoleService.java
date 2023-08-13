@@ -5,6 +5,7 @@ import com.yuier.domain.ResponseResult;
 import com.yuier.domain.dto.role.AddRoleDto;
 import com.yuier.domain.dto.role.AdminGetRoleListDto;
 import com.yuier.domain.dto.role.ChangeRoleStatusDto;
+import com.yuier.domain.dto.role.UpdateRoleDto;
 import com.yuier.domain.entity.Role;
 
 import java.util.List;
@@ -24,5 +25,11 @@ public interface RoleService extends IService<Role> {
     ResponseResult changeStatus(ChangeRoleStatusDto changeRoleStatusDto);
 
     ResponseResult addRole(AddRoleDto addRoleDto);
+
+    ResponseResult roleDetail(Long id);
+
+    ResponseResult updateRole(UpdateRoleDto updateRoleDto);
+
+    ResponseResult deleteRole(Long id);
 }
 

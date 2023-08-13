@@ -9,16 +9,16 @@ import com.yuier.domain.ResponseResult;
 import com.yuier.domain.dto.role.AddRoleDto;
 import com.yuier.domain.dto.role.AdminGetRoleListDto;
 import com.yuier.domain.dto.role.ChangeRoleStatusDto;
+import com.yuier.domain.dto.role.UpdateRoleDto;
 import com.yuier.domain.entity.RoleMenu;
-import com.yuier.domain.vo.admin.MenuVo;
-import com.yuier.domain.vo.menu.AddRoleMenuVo;
 import com.yuier.domain.vo.page.PageVo;
+import com.yuier.domain.vo.role.RoleDetailVo;
+import com.yuier.domain.vo.role.RoleListVo;
 import com.yuier.mapper.RoleMapper;
 import com.yuier.domain.entity.Role;
 import com.yuier.service.MenuService;
 import com.yuier.service.RoleMenuService;
 import com.yuier.service.RoleService;
-import com.yuier.service.UserRoleService;
 import com.yuier.utils.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,8 +75,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         Page<Role> rolePage = new Page<>(pageNum, pageSize);
         page(rolePage, queryWrapper);
         List<Role> roleList = rolePage.getRecords();
+        List<RoleListVo> roleListVos = BeanCopyUtils.copyBeanList(roleList, RoleListVo.class);
         Long total = rolePage.getTotal();
-        PageVo pageVo = new PageVo(roleList, total);
+        PageVo pageVo = new PageVo(roleListVos, total);
         return ResponseResult.okResult(pageVo);
     }
 
@@ -106,7 +107,50 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
                 .map(menuId -> new RoleMenu(role.getId(), menuId))
                 .toList();
         roleMenuService.saveBatch(roleMenuList);
-        return null;
+        return ResponseResult.okResult();
+    }
+
+    // 角色信息回显
+    @Override
+    public ResponseResult roleDetail(Long id) {
+        Role role = getById(id);
+        RoleDetailVo roleDetailVo = BeanCopyUtils.copyBean(role, RoleDetailVo.class);
+        return ResponseResult.okResult(roleDetailVo);
+    }
+
+    // 修改角色
+    @Override
+    @Transactional
+    public ResponseResult updateRole(UpdateRoleDto updateRoleDto) {
+        // 先保存角色
+        Role role = BeanCopyUtils.copyBean(updateRoleDto, Role.class);
+        updateById(role);
+        // 再保存菜单 id 列表
+        // 先获取有效（未被删除）的菜单 id 并转化为 role-menu 实体列表
+        List<Long> validMenuIds = getValidMenuIds(updateRoleDto.getMenuIds());
+        List<RoleMenu> roleMenuList = validMenuIds.stream()
+                .map(menuId -> new RoleMenu(updateRoleDto.getId(), menuId))
+                .toList();
+        // 然后删除角色原本绑定的菜单
+        LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(RoleMenu::getRoleId, updateRoleDto.getId());
+        roleMenuService.remove(queryWrapper);
+        // 最后保存新的 role-menu 表
+        roleMenuService.saveBatch(roleMenuList);
+        return ResponseResult.okResult();
+    }
+
+    // 删除角色
+    @Override
+    @Transactional
+    public ResponseResult deleteRole(Long id) {
+        // 先删除角色
+        removeById(id);
+        // 再删除角色对应的菜单列表
+        LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(RoleMenu::getRoleId, id);
+        roleMenuService.remove(queryWrapper);
+        return ResponseResult.okResult();
     }
 
     // 获取有效的 menuId

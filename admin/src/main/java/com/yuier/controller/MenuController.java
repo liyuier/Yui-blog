@@ -57,4 +57,11 @@ public class MenuController {
     public ResponseResult adminAddRoleGetMenuTree() {
         return menuService.adminGetMenuTree();
     }
+
+    @GetMapping("/roleMenuTreeselect/{id}")
+    @SystemLog(businessName = "查询角色对应菜单树")
+    public ResponseResult updateRoleMenuTree(@PathVariable("id") Long id) {
+        return menuService.getUpdateRoleMenuTree(id);
+    }
+
 }

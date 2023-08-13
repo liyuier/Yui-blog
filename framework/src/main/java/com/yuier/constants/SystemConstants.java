@@ -58,6 +58,8 @@ public class SystemConstants {
 
     // 系统超级管理员 ID
     public static final Long SUPER_ADMIN_ID = 1L;
+    // 系统超级管理员角色 ID
+    public static final Long SUPER_ADMIN_ROLE_ID = 1L;
 
     // 菜单状态正常
     public static final String MENU_STATUS_NORMAL = "0";
