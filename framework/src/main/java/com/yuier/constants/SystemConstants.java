@@ -83,4 +83,7 @@ public class SystemConstants {
     // 角色状态正常
     public static final String ROLE_STATUS_NORMAL = "0";
 
+    // 用户类型为后台管理员
+    public static final String ADMIN_USER = "1";
+
 }

@@ -1,5 +1,7 @@
 package com.yuier.service.impl;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,10 +11,7 @@ import com.yuier.domain.dto.category.AddCategoryDto;
 import com.yuier.domain.dto.category.ListCategoryByPageDto;
 import com.yuier.domain.dto.category.UpdateCategoryDto;
 import com.yuier.domain.entity.Article;
-import com.yuier.domain.vo.category.AdminListCategoryByPageVo;
-import com.yuier.domain.vo.category.AllCategoryListVo;
-import com.yuier.domain.vo.category.CategoryDetailBeforeUpdateVo;
-import com.yuier.domain.vo.category.CategoryVo;
+import com.yuier.domain.vo.category.*;
 import com.yuier.domain.vo.page.PageVo;
 import com.yuier.enums.AppHttpCodeEnum;
 import com.yuier.exception.SystemException;
@@ -21,10 +20,14 @@ import com.yuier.domain.entity.Category;
 import com.yuier.service.ArticleService;
 import com.yuier.service.CategoryService;
 import com.yuier.utils.BeanCopyUtils;
+import com.yuier.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -130,6 +133,28 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             removeById(id);
         }
         return ResponseResult.okResult();
+    }
+
+    @Override
+    public void export2Excel(HttpServletResponse response) {
+        // 设置下载文件的请求头
+        try {
+            WebUtils.setDownLoadHeader("分类.xlsx", response);
+            // 获取需要导出的数据
+            List<Category> categoryList = list();
+            List<ExcelCategoryVo> excelCategoryVos = BeanCopyUtils.copyBeanList(categoryList, ExcelCategoryVo.class);
+            // 将数据写入 Excel
+            EasyExcel.write(response.getOutputStream(), ExcelCategoryVo.class)
+                    .autoCloseStream(Boolean.FALSE)
+                    .sheet("分类导出")
+                    .doWrite(excelCategoryVos);
+        } catch (Exception e) {
+            // 如果出现错误，重置 response
+            e.printStackTrace();
+            response.reset();
+            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR);
+            WebUtils.renderString(response, JSON.toJSONString(result));
+        }
     }
 }
 

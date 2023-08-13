@@ -8,6 +8,7 @@ import com.yuier.domain.dto.category.UpdateCategoryDto;
 import com.yuier.domain.entity.Category;
 import com.yuier.domain.vo.category.AllCategoryListVo;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -31,5 +32,7 @@ public interface CategoryService extends IService<Category> {
     ResponseResult updateCategory(UpdateCategoryDto updateCategoryDto);
 
     ResponseResult deleteCategory(List<Long> id);
+
+    void export2Excel(HttpServletResponse response);
 }
 

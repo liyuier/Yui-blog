@@ -1,8 +1,10 @@
 package com.yuier.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.yuier.constants.SystemConstants;
 import com.yuier.domain.entity.LoginUser;
 import com.yuier.domain.entity.User;
+import com.yuier.mapper.MenuMapper;
 import com.yuier.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,6 +26,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private MenuMapper menuMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -36,6 +41,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
         // 返回用户
         // TODO 查询权限信息并封装
-        return new LoginUser(user);
+        // 如果用户为后台用户，才进行权限查询
+        if (user.getType().equals(SystemConstants.ADMIN_USER)) {
+            List<String> perms = menuMapper.selectPermsByUserId(user.getId());
+            return new LoginUser(user, perms);
+        }
+        return new LoginUser(user, null);
     }
 }
