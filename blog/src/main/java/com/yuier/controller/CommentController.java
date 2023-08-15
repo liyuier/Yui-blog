@@ -40,7 +40,7 @@ public class CommentController {
     }
 
     // 发送评论
-    @PostMapping
+    @PostMapping("/sendComment")
     @SystemLog(businessName = "发送文章或友链评论")
     @ApiOperation(value = "发送评论", notes = "发送文章或友链评论")
     @ApiImplicitParams(@ApiImplicitParam(name = "comment", value = "前端发送字段自动装配为 Comment 对象"))

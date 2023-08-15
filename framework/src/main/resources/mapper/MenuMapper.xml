@@ -9,8 +9,7 @@
         WHERE ur.user_id = #{id}
             AND m.menu_type IN ('C', 'F')
             AND m.`status` = 0
-            AND m.del_flag = 0
-        ORDER BY m.parent_id, m.order_num;
+            AND m.del_flag = 0;
     </select>
     <select id="selectMenuListByUserId" resultType="com.yuier.domain.entity.Menu">
         SELECT DISTINCT m.id, m.parent_id, m.menu_name, m.path, m.component, m.visible, m.status,
@@ -21,7 +20,6 @@
         WHERE ur.user_id = #{id}
             AND m.menu_type IN ('C', 'M')
             AND m.`status` = 0
-            AND m.del_flag = 0
-        ORDER BY m.parent_id, m.order_num;
+            AND m.del_flag = 0;
     </select>
 </mapper>

@@ -47,19 +47,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     // 前台查询分类列表
     @Override
     public ResponseResult getCategoryList() {
-        // 查询文章表 状态为已发布的文章
-        LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<>();
-        articleWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
-        List<Article> articleList = articleService.list(articleWrapper);
-        // 获取文章的分类 id ，并去重
-        Set<Long> categoryIds = articleList.stream()
-                .map(Article::getCategoryId)
-                .collect(Collectors.toSet());  // 使用 toSet 可以直接去重
-        // 查询分类表
-        List<Category> categories = listByIds(categoryIds);
-        categories = categories.stream()
-                .filter(category -> SystemConstants.CATEGORY_STATUS_NORMAL.equals(category.getStatus()))
-                .collect(Collectors.toList());  // 过滤标签状态为正常
+        List<Category> categories = list();
         // 封装 vo
         List<CategoryVo> categoryVos = BeanCopyUtils.copyBeanList(categories, CategoryVo.class);
         return ResponseResult.okResult(categoryVos);
