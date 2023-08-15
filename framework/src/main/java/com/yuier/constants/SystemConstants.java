@@ -56,6 +56,9 @@ public class SystemConstants {
     // 文章浏览量自增长 1
     public static final long ARTICLE_VIEW_COUNT_INCREMENT = 1;
 
+    // 文章浏览量为 0
+    public static final Integer ARTICLE_VIEW_COUNT_ZERO = 0;
+
     // 系统超级管理员 ID
     public static final Long SUPER_ADMIN_ID = 1L;
     // 系统超级管理员角色 ID

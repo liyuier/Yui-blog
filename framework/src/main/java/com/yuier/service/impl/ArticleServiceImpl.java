@@ -29,7 +29,9 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -168,6 +170,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 添加博客
         Article article = BeanCopyUtils.copyBean(addArticleDto, Article.class);
         save(article);
+        // 向 redis 中添加浏览量为 0
+        redisCache.setCacheMapValue(
+                SystemConstants.REDIS_KEYS.ARTICLE_VIEW_COUNT,
+                article.getId().toString(),
+                SystemConstants.ARTICLE_VIEW_COUNT_ZERO
+        );
         // 添加 article-tag 记录，只能添加未被删除的 tag
         List<Long> tagIdList = addArticleDto.getTags();
         List<Long> validTags = getValidTags(tagIdList);
@@ -265,6 +273,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 获取类的 viewCount 字段实例，并设置该字段为 accessible
         Field viewCountField = clazz.getDeclaredField("viewCount");
         viewCountField.setAccessible(true);
+
+        // 如果 redis 中不存在文章浏览量的键，则从数据库中初始化
+        Set keys = redisCache.getKeys();
+        if (!keys.contains(SystemConstants.REDIS_KEYS.ARTICLE_VIEW_COUNT)) {
+            // 查询博客信息 id viewCount'
+            List<Article> articles = list();
+            // 将查询到的 List<article> 转为 Map<String, Integer> ，键值分别为 id 和 viewCount
+            Map<String, Integer> viewCountMap = articles.stream().collect(Collectors.toMap(
+                    article -> article.getId().toString(),
+                    article -> article.getViewCount().intValue()
+            ));
+            // 存储到 Redis 中
+            redisCache.setCacheMap(SystemConstants.REDIS_KEYS.ARTICLE_VIEW_COUNT, viewCountMap);
+        }
 
         // 从 Redis 中取出 id 对应的浏览量
         Integer viewCountInRedis = redisCache.getCacheMapValue(

@@ -216,7 +216,13 @@ public class RedisCache {
         return redisTemplate.keys(pattern);
     }
 
+    // 增加 map 对象的值
     public void increCacheMapValue(final String key, final String hKey, final long value) {
         redisTemplate.opsForHash().increment(key, hKey, value);
+    }
+
+    // 获取 redis 中所有键
+    public Set getKeys() {
+        return redisTemplate.keys("*");
     }
 }
