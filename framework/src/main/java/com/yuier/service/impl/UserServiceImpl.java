@@ -211,11 +211,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional
     public ResponseResult adminUpdateUser(AdminUpdateUserDto adminUpdateUserDto) {
         // 对用户邮箱与手机号码进行存在性判断
-        if (emailExists(adminUpdateUserDto.getEmail())) {
+        if (emailExists(adminUpdateUserDto.getEmail()) &&
+                !adminUpdateUserDto.getEmail().equals(getById(adminUpdateUserDto.getId()).getEmail())) {
             throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
         }
         if (StringUtils.hasText(adminUpdateUserDto.getPhonenumber()) &&
-                phonenumberExists(adminUpdateUserDto.getPhonenumber())) {
+                phonenumberExists(adminUpdateUserDto.getPhonenumber()) &&
+                    !adminUpdateUserDto.getPhonenumber().equals(getById(adminUpdateUserDto.getId()).getPhonenumber())) {
             throw new SystemException(AppHttpCodeEnum.PHONENUMBER_EXIST);
         }
         // 先保存用户
